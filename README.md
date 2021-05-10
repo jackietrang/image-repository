@@ -4,8 +4,8 @@ Built an image repository that allows uploading images and deleting images using
 ## Features
 1. Sign up new user
 2. Log in existing user
-3. Move tasks from To Do -> Doing -> Done
-4. Delete tasks
+3. Upload images after checking whether the image is unique and has a valid extension
+4. Delete images
 
 ## Project Structure
 + README.md
@@ -63,7 +63,7 @@ python unittests.py
 ```
 
 ## Project Demo
-Here's a walkthrough of the Kaban app:
+Here's a walkthrough of the app:
 
 <img src='projec_demo.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
