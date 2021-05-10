@@ -1,0 +1,100 @@
+body {
+    position: relative;
+    opacity: 0.9;
+    font-family: 'Poppins', sans-serif;
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+    color: black;
+    margin-top: 2em !important;
+    padding: 0.5em !important;
+}
+
+.task-input {
+    display: flex;
+    justify-content: center;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+}
+
+div {
+    display: block;
+}
+
+h2 {
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+    font-size: x-large;
+    line-height: 1.3em;
+    font-weight: bold;
+}
+
+
+.input-task {
+    display: inline-block;
+    padding:1em 1.5em;
+    margin:0 0.3em 0.3em 0;
+    border: 3px solid #494949;
+    
+}
+.btn-submit {
+    border-radius: 1.4em;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-decoration: none;
+    /* background: #ffffff; */
+    background: #7ab55c;
+    padding: 0.6em 1.1em;
+    /* border: 3px solid #494949; */
+    float:right;
+    transition: all 0.4s ease 0s;
+}
+
+
+.img-display {
+    display: flex;
+    width: 40%;
+    justify-content: center;
+    margin: 20px;
+    padding: 10px;
+}
+
+
+ul, li {
+  list-style-type: none;
+  text-align: center;
+
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+    .first-box {
+      width: 100%;
+    }
+  }
+
+@media screen and (max-width: 600px) {
+    .second-box {
+      width: 100%;
+    }
+  }
+
+@media screen and (max-width: 600px) {
+    .third-box {
+      width: 100%;
+    }
+  }
+
