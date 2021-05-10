@@ -1,24 +1,24 @@
-# Kanban Board
-Built a Kanban productivity board using Flask microframework. 
+# Image Repository Challenge by Jackie Trang
+Built an image repository that allows uploading images and deleting images using Flask framework and SQLite database.
 
 ## Features
 1. Sign up new user
 2. Log in existing user
-3. Move tasks from To Do -> Doing -> Done
-4. Delete tasks
+3. Upload images after checking whether the image is unique and has a valid extension
+4. Delete images
 
 ## Project Structure
 + README.md
 + app.py
-+ unittests.py
-+ dbtest.py
-+ database.db
++ unittests.py #tests for the application
++ database.db #sqlite database
 + requirements.txt
 + templates
     + index.html
     + signin.html
     + signup.html
 + static
+    + uploads # folder to store images uploaded
     + style.css
 
 ## How to run the app
@@ -61,13 +61,9 @@ For authentication (signup, login):
 ```sh
 python unittests.py
 ```
-For database connection:
-```sh
-python dbtest.py
-```
 
 ## Project Demo
-Here's a walkthrough of the Kaban app:
+Here's a walkthrough of the app:
 
 <img src='projec_demo.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
