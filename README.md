@@ -64,7 +64,10 @@ python unittests.py
 
 ## Project Demo
 Here's a walkthrough of the app:
+1. Sign up new user and log in existing user
+<img src='demo1.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
-<img src='projec_demo.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+2. Upload and delete images in that user's repository
+<img src='demo2.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
