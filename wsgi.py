@@ -1,2 +1,2 @@
 from app import db
-db.create_all()
+app = db.create_all()
