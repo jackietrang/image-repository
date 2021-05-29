@@ -9,12 +9,12 @@ from werkzeug.utils import secure_filename
 
 # set up project directory
 project_dir = os.path.dirname(os.path.abspath(__file__))
-database_file = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
+DATABASE_URL = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
 
 # Set up flask app
 main = Flask(__name__, template_folder='./templates', static_folder='./static')
 UPLOAD_FOLDER = 'static/uploads/'
-main.config["SQLALCHEMY_DATABASE_URI"] = database_file
+main.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 main.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 main.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # main.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
