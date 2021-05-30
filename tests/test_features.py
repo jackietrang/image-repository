@@ -1,5 +1,5 @@
 import sys, os
-sys.path.append(os.path.abspath(os.path.join('..', 'web')))
+sys.path.append(os.path.abspath(os.path.join('..')))
 
 # Now do your import
 import pytest 
