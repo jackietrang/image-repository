@@ -1,31 +1,28 @@
 import os
-from flask import Flask
 from flask_login import LoginManager, UserMixin, current_user, login_user, login_required, logout_user, login_manager
 from flask import Flask, render_template, redirect, url_for, request, g, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import re
 import urllib.request
 from werkzeug.utils import secure_filename
+from utils import * 
 
 # set up project directory
 project_dir = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
-
 # Set up flask app
 main = Flask(__name__, template_folder='./templates', static_folder='./static')
-UPLOAD_FOLDER = 'static/uploads/'
+UPLOAD_FOLDER = './static/uploads/'
 main.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 main.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 main.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# main.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 db = SQLAlchemy(main)
-
 # Set up app and Flask-Login for them to work together
 main.secret_key = "jackie trang" # required a secret key for session authentication
 signin = LoginManager() #built-in class LoginManager()
 signin.init_app(main)  # configure app for login
 signin.login_view = 'signin'
-
+main.testing = True # allow context for unittest
 
 # Intialize Task and User objects
 class Image(db.Model):
@@ -48,13 +45,13 @@ db.create_all()
 # Generates entries for the database
 db.session.commit()
 
+
 @main.route('/', methods=['GET', 'POST'])
 def default():
     '''
     By default, users are routed to log in page
     '''
     return redirect('signin')
-
 
 @signin.user_loader
 def load_user(id):
@@ -71,7 +68,6 @@ def before_request():
     Set g.user to current_user before running any requests
     '''
     g.user = current_user
-
 
 @main.route('/signup', methods=['GET','POST'])
 def signup():
@@ -105,8 +101,6 @@ def signup():
     elif request.method == 'GET':
         return render_template('signup.html')
 
-
-
 @main.route('/signin', methods=['GET', 'POST'])
 def signin():
     ''' 
@@ -122,11 +116,6 @@ def signin():
 
     elif request.method == 'GET':
         return render_template('signin.html')
-
-VALID_FILE_TYPES = set(['png', 'jpg', 'jpeg', 'gif'])
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in VALID_FILE_TYPES
  
 @main.route('/main', methods=['POST', 'GET'])
 @login_required
@@ -145,7 +134,14 @@ def upload_image():
         return render_template('index.html', user=current_user)
     file = request.files['file']
     existed_images = [image.filename for image in Image.query.all()]
-    if file and allowed_file(file.filename):
+        
+    try:
+        allowed_file(file.filename)
+    except ValueError:
+        flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
+        return redirect('/main')
+
+    if file:
         filename = secure_filename(file.filename)
         if filename not in existed_images:
             flash("Uploaded successfully!")
@@ -157,12 +153,9 @@ def upload_image():
             file.save(os.path.join(main.config['UPLOAD_FOLDER'], filename))
             return redirect('/main')
         else:
-            flash('Duplicate image. Please try with another image.')
+            flash('Duplicate image. Please try with another image.') 
             return redirect('/main')
-    else:
-        flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
-        return redirect("/main")
- 
+    
 @main.route('/display/<filename>')
 def display_image(filename):
     '''
@@ -180,6 +173,7 @@ def delete():
     db.session.delete(image)
     db.session.commit()
     return redirect('/main')
+
 
 if __name__ == "__main__":
     main.run(debug=False)

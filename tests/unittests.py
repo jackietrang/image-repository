@@ -1,7 +1,7 @@
 import os, sys
 # Bring  packages onto the path
 import sys, os
-sys.path.append(os.path.abspath(os.path.join('..', 'web')))
+sys.path.append(os.path.abspath(os.path.join('..')))
 
 import unittest
 import requests
