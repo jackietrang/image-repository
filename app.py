@@ -1,16 +1,18 @@
-import os
+import os, re
 from flask_login import LoginManager, UserMixin, current_user, login_user, login_required, logout_user, login_manager
 from flask import Flask, render_template, redirect, url_for, request, g, session, flash
 from flask_sqlalchemy import SQLAlchemy
-import re
 import urllib.request
 from werkzeug.utils import secure_filename
 from utils import * 
 
+#######################################
+###### FLASK APP CONFIGURATION ########
+#######################################
 # set up project directory
 project_dir = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
-# Set up flask app
+# Set up flask app configuration
 main = Flask(__name__, template_folder='./templates', static_folder='./static')
 UPLOAD_FOLDER = './static/uploads/'
 main.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
@@ -24,6 +26,9 @@ signin.init_app(main)  # configure app for login
 signin.login_view = 'signin'
 main.testing = True # allow context for unittest
 
+#######################################
+###### DATABASE SCHEMA ################
+#######################################
 # Intialize Task and User objects
 class Image(db.Model):
     '''
@@ -46,6 +51,9 @@ db.create_all()
 db.session.commit()
 
 
+#######################################
+########## APP CONTEXT ################
+#######################################
 @main.route('/', methods=['GET', 'POST'])
 def default():
     '''
@@ -69,11 +77,15 @@ def before_request():
     '''
     g.user = current_user
 
+#######################################
+########## USER AUTHORIZATION #########
+#######################################
 @main.route('/signup', methods=['GET','POST'])
 def signup():
     '''
     Sign up new users with password requirements
     - POST request: Save user sign-up information to db and redirect them to log-in page
+        + Password must contain both letters and numbers
     - GET request: render sign-up page
     '''
     if request.method == 'POST':
@@ -117,6 +129,9 @@ def signin():
     elif request.method == 'GET':
         return render_template('signin.html')
  
+#######################################
+###### IMAGE REPO FEATURES ############
+#######################################
 @main.route('/main', methods=['POST', 'GET'])
 @login_required
 def index():
@@ -129,13 +144,11 @@ def index():
 
 @main.route('/upload_image', methods=['POST'])
 def upload_image():
-    if 'file' not in request.files:
-        flash('No file part')
-        return render_template('index.html', user=current_user)
-    file = request.files['file']
+    file = request.files['file'] # get the file user uploads
+    # query current images in db
     existed_images = [image.filename for image in Image.query.all()]
         
-    try:
+    try: # check if file extension is valid
         allowed_file(file.filename)
     except ValueError:
         flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
@@ -152,6 +165,7 @@ def upload_image():
             # save to /uploads directory
             file.save(os.path.join(main.config['UPLOAD_FOLDER'], filename))
             return redirect('/main')
+        # if file already existed in db
         else:
             flash('Duplicate image. Please try with another image.') 
             return redirect('/main')
@@ -168,7 +182,9 @@ def delete():
     '''
     Delete image from database 
     '''
-    img_delete = request.form.get('img_delete')
+    # get filename from HTML form
+    img_delete = request.form.get('img_delete') 
+    # query and delete from db
     image = Image.query.filter_by(filename=img_delete).first()
     db.session.delete(image)
     db.session.commit()
