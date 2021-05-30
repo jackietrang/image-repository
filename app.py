@@ -4,6 +4,7 @@ from flask import Flask, render_template, redirect, url_for, request, g, session
 from flask_sqlalchemy import SQLAlchemy
 import urllib.request
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from utils import * 
 
 #######################################
@@ -105,7 +106,13 @@ def signup():
             error_msg = "Password doesn't match"
             return render_template("signup.html", error=error_msg)
         username = request.form.get('user_email')
-        signup_user = User(username=username, password=password) # new instance of user
+        existed_usernames = {user.username for user in User.query.all()}
+        if username in existed_usernames:
+            error_msg = "Username already existed. Please choose a new name."
+            return render_template("signup.html", error=error_msg)
+
+        # store hashed password to db for security
+        signup_user = User(username=username, password=generate_password_hash(password)) # new instance of user
         # add user login + password to db
         db.session.add(signup_user)
         db.session.commit()
@@ -122,13 +129,20 @@ def signin():
     if request.method == 'POST':
         username = request.form.get('user_email')
         password = request.form.get('password')
-        user = User.query.filter_by(username=username, password=password).first() #query user
-        if user: # if there's user info in db, log them in
+        user = User.query.filter_by(username=username).first() #query user
+        # if there's user info in db and hashed password matches
+        if user and check_password_hash(user.password, password): 
             login_user(user)
-            return redirect("/main") # go to index()
+            return redirect("/main") 
 
     elif request.method == 'GET':
         return render_template('signin.html')
+
+@main.route("/logout", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    return redirect('/signin')
  
 #######################################
 ###### IMAGE REPO FEATURES ############
@@ -147,8 +161,6 @@ def index():
 def upload_image():
     file = request.files['file'] # get the file user uploads
     # query current images in db
-
-    existed_images = [image.unique_count for image in Image.query.filter_by(user_id=str(g.user.id)).all()]
         
     try: # check if file extension is valid
         allowed_file(file.filename)
