@@ -11,7 +11,7 @@
     <h1>Sign In</h1>
     <div class="flex-container">
       
-      <form method="POST">
+      <form method="POST" autocomplete="off">
         <input class="input-task" type="text" placeholder="Username" name="user_email" value="{{request.form.user_email}}">
         <br>
         <input class="input-task" type="password" placeholder="Password" name="password" value="{{request.form.password}}">
