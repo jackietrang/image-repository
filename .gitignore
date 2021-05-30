@@ -17,3 +17,6 @@ venv.bak/
 
 *.DS_Store
 *.db
+
+# uploads folder
+static/uploads/

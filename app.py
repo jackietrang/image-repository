@@ -1,8 +1,7 @@
-import os
+import os, re
 from flask_login import LoginManager, UserMixin, current_user, login_user, login_required, logout_user, login_manager
 from flask import Flask, render_template, redirect, url_for, request, g, session, flash
 from flask_sqlalchemy import SQLAlchemy
-import re
 import urllib.request
 from werkzeug.utils import secure_filename
 from utils import * 
@@ -30,13 +29,14 @@ class Image(db.Model):
     Image has foreign key link to User table
     '''
     __tablename__ = 'Image'
-    filename = db.Column(db.String(100), nullable=True, unique=False, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    filename = db.Column(db.String(100), nullable=True, unique=False)
+    unique_count = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(100), db.ForeignKey('User.id'))
 
 class User(UserMixin, db.Model):
     __tablename__ = 'User'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100))
+    username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     image_id = db.relationship('Image', backref='User')
 
@@ -46,7 +46,10 @@ db.create_all()
 db.session.commit()
 
 
-@main.route('/', methods=['GET', 'POST'])
+#######################################
+########## APP CONTEXT ################
+#######################################
+@main.route('/', methods=['GET'])
 def default():
     '''
     By default, users are routed to log in page
@@ -124,16 +127,14 @@ def index():
     Default page
     '''
     g.user = current_user
-    images = Image.query.filter_by(user_id=g.user.id).all() # query all images in the database
+    images = Image.query.filter_by(user_id=str(g.user.id)).all() # query all images in the database
     return render_template("index.html", images=images, user=current_user)
 
 @main.route('/upload_image', methods=['POST'])
 def upload_image():
-    if 'file' not in request.files:
-        flash('No file part')
-        return render_template('index.html', user=current_user)
-    file = request.files['file']
-    existed_images = [image.filename for image in Image.query.all()]
+    file = request.files['file'] # get the file user uploads
+    # query current images in db
+    existed_images = [image.unique_count for image in Image.query.filter_by(user_id=str(g.user.id)).all()]
         
     try:
         allowed_file(file.filename)
@@ -141,35 +142,43 @@ def upload_image():
         flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
         return redirect('/main')
 
-    if file:
-        filename = secure_filename(file.filename)
-        if filename not in existed_images:
-            flash("Uploaded successfully!")
-            image = Image(filename= filename, user_id = g.user.id) 
-            # save that image to db
-            db.session.add(image)
-            db.session.commit()
-            # save to /uploads directory
-            file.save(os.path.join(main.config['UPLOAD_FOLDER'], filename))
-            return redirect('/main')
-        else:
-            flash('Duplicate image. Please try with another image.') 
-            return redirect('/main')
+    if not file:
+        raise FileNotFoundError
+    filename = secure_filename(file.filename)
+
+    # if file.unique_count not in existed_images:
+    flash("Uploaded successfully!")
+    image = Image(filename= filename, user_id = str(g.user.id))
     
-@main.route('/display/<filename>')
-def display_image(filename):
+    # save that image to db
+    db.session.add(image)
+    db.session.commit()
+    # save to /uploads directory
+    file.save(os.path.join(main.config['UPLOAD_FOLDER'], image.user_id  + image.filename))
+    return redirect('/main')
+    # if file already existed in db
+    # else:
+        # flash('Duplicate image. Please try with another image.') 
+        # return redirect('/main')
+
+uploads_url = 'uploads/'
+@main.route('/display/<filename_by_user>')
+def display_image(filename_by_user):
     '''
     Display image in HTML
     '''
-    return redirect(url_for('static', filename='uploads/' + filename), code=301)
+    return redirect(url_for('static', filename= uploads_url + filename_by_user), code=301)
 
 @main.route('/delete', methods=['POST'])
 def delete():
     '''
     Delete image from database 
     '''
-    img_delete = request.form.get('img_delete')
-    image = Image.query.filter_by(filename=img_delete).first()
+    # get filename from HTML form
+    filename_by_user = request.form.get('img_delete')
+    # delete image belong to the current user
+    # query based on concatenated string of two columns
+    image = Image.query.filter((Image.user_id + Image.filename).like(filename_by_user)).first()
     db.session.delete(image)
     db.session.commit()
     return redirect('/main')

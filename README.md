@@ -8,18 +8,26 @@ Built an image repository that allows uploading images and deleting images using
 4. Delete images
 
 ## Project Structure
-+ README.md
-+ app.py
-+ unittests.py #tests for the application
-+ database.db #sqlite database
-+ requirements.txt
-+ templates
+    README.md
+    db_setup.py
+    app.py
+    requirements.txt
+    Procfile
+    templates
+        |
+        |----- index.html
+        |----- signin.html
+        |----- signup.html
+    static
+        |
+        |----- uploads (folder to store images uploaded)
+        |----- style.css
+    tests
+        |
+        |----- unittests.py (tests with unittest)
+        |----- test_features.py (test with pytest)
+
     + index.html
-    + signin.html
-    + signup.html
-+ static
-    + uploads # folder to store images uploaded
-    + style.css
 
 ## How to run the app
 ### Windows 
@@ -36,10 +44,7 @@ cd ../.. # go up two levels
 ```
 3. Set up database (main directory)
 ```sh
-python #activate Python shell
-from app import db
-db.create_all()
-exit()
+python db_setup.py
 ```
 4. Run the application
 ```sh
@@ -57,9 +62,10 @@ pip3 install -r requirements.txt
 ```
 ## How to run unit test 
 <strong>Note: </strong> Make sure the app is running when test files are executed. This can be done by having split terminals in IDE.
-For authentication (signup, login):
+Go to `/tests` directory:
 ```sh
-python unittests.py
+python unittests.py # test with unittest
+python -m pytest test_features.py -v # test with pytest
 ```
 
 ## Project Demo
@@ -71,3 +77,8 @@ Here's a walkthrough of the app:
 <img src='demo2.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
+
+## Deployment:
+The application is running at: https://image-repo-app.herokuapp.com/
+
+
