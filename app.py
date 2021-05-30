@@ -6,10 +6,13 @@ import urllib.request
 from werkzeug.utils import secure_filename
 from utils import * 
 
+#######################################
+###### FLASK APP CONFIGURATION ########
+#######################################
 # set up project directory
 project_dir = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
-# Set up flask app
+# Set up flask app configuration
 main = Flask(__name__, template_folder='./templates', static_folder='./static')
 UPLOAD_FOLDER = './static/uploads/'
 main.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
@@ -23,6 +26,9 @@ signin.init_app(main)  # configure app for login
 signin.login_view = 'signin'
 main.testing = True # allow context for unittest
 
+#######################################
+###### DATABASE SCHEMA ################
+#######################################
 # Intialize Task and User objects
 class Image(db.Model):
     '''
@@ -72,11 +78,15 @@ def before_request():
     '''
     g.user = current_user
 
+#######################################
+########## USER AUTHORIZATION #########
+#######################################
 @main.route('/signup', methods=['GET','POST'])
 def signup():
     '''
     Sign up new users with password requirements
     - POST request: Save user sign-up information to db and redirect them to log-in page
+        + Password must contain both letters and numbers
     - GET request: render sign-up page
     '''
     if request.method == 'POST':
@@ -120,6 +130,9 @@ def signin():
     elif request.method == 'GET':
         return render_template('signin.html')
  
+#######################################
+###### IMAGE REPO FEATURES ############
+#######################################
 @main.route('/main', methods=['POST', 'GET'])
 @login_required
 def index():
@@ -134,9 +147,10 @@ def index():
 def upload_image():
     file = request.files['file'] # get the file user uploads
     # query current images in db
+
     existed_images = [image.unique_count for image in Image.query.filter_by(user_id=str(g.user.id)).all()]
         
-    try:
+    try: # check if file extension is valid
         allowed_file(file.filename)
     except ValueError:
         flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
@@ -148,18 +162,13 @@ def upload_image():
 
     # if file.unique_count not in existed_images:
     flash("Uploaded successfully!")
-    image = Image(filename= filename, user_id = str(g.user.id))
-    
+    image = Image(filename= filename, user_id = str(g.user.id))    
     # save that image to db
     db.session.add(image)
     db.session.commit()
     # save to /uploads directory
     file.save(os.path.join(main.config['UPLOAD_FOLDER'], image.user_id  + image.filename))
     return redirect('/main')
-    # if file already existed in db
-    # else:
-        # flash('Duplicate image. Please try with another image.') 
-        # return redirect('/main')
 
 uploads_url = 'uploads/'
 @main.route('/display/<filename_by_user>')
