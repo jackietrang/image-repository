@@ -27,8 +27,7 @@ Built an image repository that allows uploading images and deleting images using
         |----- unittests.py (tests with unittest)
         |----- test_features.py (test with pytest)
 
-    + index.html
-
+        
 ## How to run the app
 ### Windows 
 1. Clone this repository to local computer
