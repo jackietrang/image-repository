@@ -35,13 +35,14 @@ class Image(db.Model):
     Image has foreign key link to User table
     '''
     __tablename__ = 'Image'
-    filename = db.Column(db.String(100), nullable=True, unique=False, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    filename = db.Column(db.String(100), nullable=True, unique=False)
+    unique_count = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(100), db.ForeignKey('User.id'))
 
 class User(UserMixin, db.Model):
     __tablename__ = 'User'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100))
+    username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     image_id = db.relationship('Image', backref='User')
 
@@ -54,7 +55,7 @@ db.session.commit()
 #######################################
 ########## APP CONTEXT ################
 #######################################
-@main.route('/', methods=['GET', 'POST'])
+@main.route('/', methods=['GET'])
 def default():
     '''
     By default, users are routed to log in page
@@ -139,14 +140,15 @@ def index():
     Default page
     '''
     g.user = current_user
-    images = Image.query.filter_by(user_id=g.user.id).all() # query all images in the database
+    images = Image.query.filter_by(user_id=str(g.user.id)).all() # query all images in the database
     return render_template("index.html", images=images, user=current_user)
 
 @main.route('/upload_image', methods=['POST'])
 def upload_image():
     file = request.files['file'] # get the file user uploads
     # query current images in db
-    existed_images = [image.filename for image in Image.query.all()]
+
+    existed_images = [image.unique_count for image in Image.query.filter_by(user_id=str(g.user.id)).all()]
         
     try: # check if file extension is valid
         allowed_file(file.filename)
@@ -154,28 +156,27 @@ def upload_image():
         flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
         return redirect('/main')
 
-    if file:
-        filename = secure_filename(file.filename)
-        if filename not in existed_images:
-            flash("Uploaded successfully!")
-            image = Image(filename= filename, user_id = g.user.id) 
-            # save that image to db
-            db.session.add(image)
-            db.session.commit()
-            # save to /uploads directory
-            file.save(os.path.join(main.config['UPLOAD_FOLDER'], filename))
-            return redirect('/main')
-        # if file already existed in db
-        else:
-            flash('Duplicate image. Please try with another image.') 
-            return redirect('/main')
-    
-@main.route('/display/<filename>')
-def display_image(filename):
+    if not file:
+        raise FileNotFoundError
+    filename = secure_filename(file.filename)
+
+    # if file.unique_count not in existed_images:
+    flash("Uploaded successfully!")
+    image = Image(filename= filename, user_id = str(g.user.id))    
+    # save that image to db
+    db.session.add(image)
+    db.session.commit()
+    # save to /uploads directory
+    file.save(os.path.join(main.config['UPLOAD_FOLDER'], image.user_id  + image.filename))
+    return redirect('/main')
+
+uploads_url = 'uploads/'
+@main.route('/display/<filename_by_user>')
+def display_image(filename_by_user):
     '''
     Display image in HTML
     '''
-    return redirect(url_for('static', filename='uploads/' + filename), code=301)
+    return redirect(url_for('static', filename= uploads_url + filename_by_user), code=301)
 
 @main.route('/delete', methods=['POST'])
 def delete():
@@ -183,9 +184,10 @@ def delete():
     Delete image from database 
     '''
     # get filename from HTML form
-    img_delete = request.form.get('img_delete') 
-    # query and delete from db
-    image = Image.query.filter_by(filename=img_delete).first()
+    filename_by_user = request.form.get('img_delete')
+    # delete image belong to the current user
+    # query based on concatenated string of two columns
+    image = Image.query.filter((Image.user_id + Image.filename).like(filename_by_user)).first()
     db.session.delete(image)
     db.session.commit()
     return redirect('/main')
