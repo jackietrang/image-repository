@@ -10,22 +10,28 @@ from utils import *
 #######################################
 ###### FLASK APP CONFIGURATION ########
 #######################################
-# set up project directory
+# set up project path
 project_dir = os.path.dirname(os.path.abspath(__file__))
+# set up database path
 DATABASE_URL = "sqlite:///{}".format(os.path.join(project_dir, "database.db"))
-# Set up flask app configuration
+# create and configure the app
 main = Flask(__name__, template_folder='./templates', static_folder='./static')
 UPLOAD_FOLDER = './static/uploads/'
+main.secret_key = "jackie trang" # key for session authentication
 main.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 main.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 main.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# disable error catching during request handling to get better error reports when test
+main.testing = True 
+
+# initialize database with current app instance
 db = SQLAlchemy(main)
-# Set up app and Flask-Login for them to work together
-main.secret_key = "jackie trang" # required a secret key for session authentication
+
+# setup login manager with app
 signin = LoginManager() #built-in class LoginManager()
 signin.init_app(main)  # configure app for login
 signin.login_view = 'signin'
-main.testing = True # allow context for unittest
+
 
 #######################################
 ###### DATABASE SCHEMA ################
@@ -37,7 +43,7 @@ class Image(db.Model):
     '''
     __tablename__ = 'Image'
     filename = db.Column(db.String(100), nullable=True, unique=False)
-    unique_count = db.Column(db.Integer, primary_key=True)
+    image_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(100), db.ForeignKey('User.id'))
 
 class User(UserMixin, db.Model):
@@ -56,13 +62,6 @@ db.session.commit()
 #######################################
 ########## APP CONTEXT ################
 #######################################
-@main.route('/', methods=['GET'])
-def default():
-    '''
-    By default, users are routed to log in page
-    '''
-    return redirect('signin')
-
 @signin.user_loader
 def load_user(id):
     '''
@@ -82,6 +81,13 @@ def before_request():
 #######################################
 ########## USER AUTHORIZATION #########
 #######################################
+@main.route('/', methods=['GET'])
+def default():
+    '''
+    By default, users are routed to log in page
+    '''
+    return redirect('signin')
+
 @main.route('/signup', methods=['GET','POST'])
 def signup():
     '''
@@ -105,7 +111,9 @@ def signup():
         if password != request.form['repeat']:
             error_msg = "Password doesn't match"
             return render_template("signup.html", error=error_msg)
+        # get username from user's request
         username = request.form.get('user_email')
+        # use a set of usernames to prevent duplications
         existed_usernames = {user.username for user in User.query.all()}
         if username in existed_usernames:
             error_msg = "Username already existed. Please choose a new name."
@@ -154,25 +162,27 @@ def index():
     Default page
     '''
     g.user = current_user
-    images = Image.query.filter_by(user_id=str(g.user.id)).all() # query all images in the database
+    # query all images in the database
+    images = Image.query.filter_by(user_id=str(g.user.id)).all() 
     return render_template("index.html", images=images, user=current_user)
 
 @main.route('/upload_image', methods=['POST'])
 def upload_image():
-    file = request.files['file'] # get the file user uploads
-    # query current images in db
+    # get the file user uploads
+    file = request.files['file'] 
         
     try: # check if file extension is valid
         allowed_file(file.filename)
     except ValueError:
         flash("Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'")
         return redirect('/main')
-
-    if not file:
+    
+    if not file: # check if there is a file sent
         raise FileNotFoundError
+    
+    # if user sends valid file 
+    # sanitize user's uploaded filename
     filename = secure_filename(file.filename)
-
-    # if file.unique_count not in existed_images:
     flash("Uploaded successfully!")
     image = Image(filename= filename, user_id = str(g.user.id))    
     # save that image to db
