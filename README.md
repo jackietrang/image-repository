@@ -4,7 +4,7 @@ Built an image repository that allows uploading images and deleting images using
 ## Features
 1. Sign up new user
 2. Log in existing user
-3. Upload images after checking whether the image is unique and has a valid extension
+3. Upload images, duplications are allowed
 4. Delete images
 
 ## Project Structure
