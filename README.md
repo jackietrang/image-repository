@@ -12,11 +12,13 @@ Built an image repository that allows uploading images and deleting images using
 4. Delete images
 
 ## 🏗️ Project Structure
+```
 --- README.md
---- db_setup.py
---- app.py
 --- requirements.txt
+--- db_setup.py
+--- app.py  
 --- Procfile
+--- .gitignore
 --- templates
         |
         |----- index.html
@@ -30,7 +32,7 @@ Built an image repository that allows uploading images and deleting images using
         |
         |----- unittests.py (tests with unittest)
         |----- test_features.py (test with pytest)
-
+```
 ## 💃 Project Demo
 Here's a walkthrough of the app:
 1. Sign up new user and log in existing user
