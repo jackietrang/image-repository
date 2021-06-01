@@ -3,7 +3,6 @@ Built an image repository that allows uploading images and deleting images using
 
 ## 🤔 Assumptions
 - Small application with ~1000 users per month
-- Traffic is not evenly distributed
 
 ## ✔️ Use cases
 1. Sign up new user
