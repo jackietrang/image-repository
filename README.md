@@ -50,6 +50,10 @@ python unittests.py # test with unittest
 python -m pytest test_features.py -v # test with pytest
 ```
 
+## 🧗 Improvements
+- Better seperation of concerns for `app.py`
+- Write a more comprehensive testing for all features (upload, delete images, test database connection)
+
 ## ☁️ Deployment:
 The application is running at: https://image-repo-app.herokuapp.com/
         
