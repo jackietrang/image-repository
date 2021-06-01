@@ -14,7 +14,7 @@ def test_valid_file(file_name):
     '''
     Uploading invalid files should raise a ValueError
     '''
-    with pytest.raises(ValueError, match=r"Invalid file extension. Please upload 'png', 'jpg', 'jpeg', 'gif'"):
+    with pytest.raises(ValueError):
         app.allowed_file(file_name)
 
 
