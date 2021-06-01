@@ -26,5 +26,16 @@
       </form>
     </div>
     
+    <p>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul>
+          {% for message in messages %}
+            <li>Message: {{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+  </p>
   </body>
 </html>
