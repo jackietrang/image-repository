@@ -142,8 +142,6 @@ def signin():
         if user and check_password_hash(user.password, password): 
             login_user(user)
             return redirect("/main") 
-        else:
-            return redirect("/main") 
     elif request.method == 'GET':
         return render_template('signin.html')
 
