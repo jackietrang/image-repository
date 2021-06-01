@@ -8,22 +8,22 @@ import requests
 import app 
 from app import main
 
-
 class BasicTests(unittest.TestCase):
         
     def test_signup_correct(self):
         '''
         After signing up, user should be routed to sign-in 
         '''
-        test = {'username':'jackie', 'password':'n123', 'repeat':'n123'} #correct signup
+        test = {'username':'random2@gmail.com', 'password':'n123', 'repeat':'n123'} #correct signup
         request = requests.post('http://127.0.0.1:5000/signup', data=test)
         self.assertEqual(request.url,'http://127.0.0.1:5000/signin')
     
-    def test_sign_in_correct(self):
+    def test_ssign_in_correct(self): 
         '''
         After successful sign-in, user should be routed to the main page
+        Make sure this run after test_sign_up_correct
         '''
-        test = {'username':'jackie', 'password':'n123'} 
+        test = {'username':'random2@gmail.com', 'password':'n123'} 
         request = requests.post('http://127.0.0.1:5000/signin', data=test)
         self.assertEqual(request.url,'http://127.0.0.1:5000/main')
         

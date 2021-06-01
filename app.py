@@ -112,7 +112,7 @@ def signup():
             error_msg = "Password doesn't match"
             return render_template("signup.html", error=error_msg)
         # get username from user's request
-        username = request.form.get('user_email')
+        username = request.form.get('username')
         # use a set of usernames to prevent duplications
         existed_usernames = {user.username for user in User.query.all()}
         if username in existed_usernames:
@@ -135,14 +135,15 @@ def signin():
     Log in existing user based on their user email and password.
     '''
     if request.method == 'POST':
-        username = request.form.get('user_email')
+        username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first() #query user
         # if there's user info in db and hashed password matches
         if user and check_password_hash(user.password, password): 
             login_user(user)
             return redirect("/main") 
-
+        else:
+            return redirect("/main") 
     elif request.method == 'GET':
         return render_template('signin.html')
 
