@@ -126,6 +126,7 @@ def signup():
         db.session.commit()
         return redirect("/signin")
 
+    # from sign-in page, if user wants to create a new account
     elif request.method == 'GET':
         return render_template('signup.html')
 
@@ -141,7 +142,11 @@ def signin():
         # if there's user info in db and hashed password matches
         if user and check_password_hash(user.password, password): 
             login_user(user)
-            return redirect("/main") 
+            return redirect("/main")
+        else:
+            flash("Wrong username or password")
+            return redirect("/signin")
+    # if user wants to signin on signup page
     elif request.method == 'GET':
         return render_template('signin.html')
 

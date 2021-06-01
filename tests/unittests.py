@@ -42,9 +42,9 @@ class BasicTests(unittest.TestCase):
         '''
         Not sign-in if password doesn't match repeated password in sign-up
         '''
-        password_list = ["n123", "a32", "032aj"] 
+        password_list = ["a32", "032aj"] 
         for password in password_list:
-            test = {'username':'one@gmail.com', 'password': password, 'repeat': "random_pass"} 
+            test = {'username':'random2@gmail.com', 'password': password, 'repeat': "random_pass"} 
             request = requests.post('http://127.0.0.1:5000/signup', data=test)
             self.assertNotEqual(request.url,'http://127.0.0.1:5000/signin')
     
